@@ -73,8 +73,9 @@ public class CameraDwi{
                     return;
                 }
             }
-
-            currentCamera = REAR_FACING;
+            if(currentCamera==null){
+                currentCamera = REAR_FACING;
+            }
 
             if(Permission.checkPermission(MainActivity.context, MainActivity.permissions)==false){
                 Permission.seekPermission((Activity) MainActivity.context, MainActivity.permissions, Permission.PERMISSION_ALL);
@@ -236,5 +237,18 @@ public class CameraDwi{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void swapCamera(){
+        cameraDevice.close();
+        cameraDevice = null;
+        if(currentCamera==FRONT_FACING){
+            currentCamera = REAR_FACING;
+        }else if(currentCamera==REAR_FACING){
+            currentCamera = FRONT_FACING;
+        }else{
+            return;
+        }
+        open();
     }
 }
