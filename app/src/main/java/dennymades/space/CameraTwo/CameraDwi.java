@@ -46,6 +46,8 @@ public class CameraDwi{
 
     private HandlerThread mBackgroundThread;
 
+    private SurfaceTexture mSurfaceTexture;
+
     public CameraDwi(){
 
     }
@@ -87,7 +89,7 @@ public class CameraDwi{
             if(Permission.checkPermission(MainActivity.context, MainActivity.permissions)==false){
                 Permission.seekPermission((Activity) MainActivity.context, MainActivity.permissions, Permission.PERMISSION_ALL);
             }
-            manager.openCamera(currentCamera, stateCallBack, null);
+            manager.openCamera(currentCamera, stateCallBack, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.d(TAG, "get Camera Id access exception", e);
         }
@@ -204,7 +206,9 @@ public class CameraDwi{
 
     private void createCameraPreview(){
         try{
-            SurfaceTexture texture = MainActivity.textureView.getSurfaceTexture();
+
+            //SurfaceTexture texture = MainActivity.textureView.getSurfaceTexture();
+            SurfaceTexture texture = mSurfaceTexture;
             assert texture!=null;
             if(currentCamera==FRONT_FACING){
                 texture.setDefaultBufferSize(imageDimensionFront.getWidth(), imageDimensionFront.getHeight());
@@ -257,5 +261,18 @@ public class CameraDwi{
             return;
         }
         open();
+    }
+
+    public void setSurfaceTexture(SurfaceTexture st){
+        Log.d(TAG, "surface texture set");
+        mSurfaceTexture = st;
+    }
+
+    public Size getDimension(){
+        if(currentCamera == FRONT_FACING){
+            return imageDimensionFront;
+        }else{
+            return imageDimensionBack;
+        }
     }
 }

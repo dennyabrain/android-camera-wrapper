@@ -5,13 +5,10 @@
     android:layout_height="match_parent"
     tools:context="dennymades.space.CameraTwo.MainActivity">
 
-    <TextureView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textureView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true" />
+    <dennymades.space.CameraTwo.StitchGLSurfaceView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
 
     <Button
         android:layout_width="wrap_content"
