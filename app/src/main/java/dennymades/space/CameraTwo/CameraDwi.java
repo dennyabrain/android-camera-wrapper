@@ -3,6 +3,7 @@ package dennymades.space.CameraTwo;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -21,6 +22,7 @@ import android.util.Size;
 import android.view.Surface;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import util.Permission;
@@ -38,6 +40,8 @@ public class CameraDwi{
     private Size imageDimensionBack;
     private String currentCamera;
 
+    private int version = 1;
+
     private CaptureRequest.Builder captureRequestBuilder;
 
     private CameraCaptureSession mcameraCaptureSession;
@@ -47,6 +51,24 @@ public class CameraDwi{
     private HandlerThread mBackgroundThread;
 
     private SurfaceTexture mSurfaceTexture;
+
+    /* Camera Object for Old APIS */
+    private Camera oldCamera;
+
+    /* Store the id of front old camera*/
+    private int oldFrontId;
+
+    /* Store the id of rear old camera*/
+    private int oldRearId;
+
+    /* flag to store current active old camera. 0 = uninitialized compare to oldFrontId or oldRearId */
+    private int oldCameraIdFlag = -1;
+
+    /* store size of front old camera; */
+    private Size oldCameraFrontSize;
+
+    /* store size of rear old camera */
+    private Size oldCameraRearSize;
 
     public CameraDwi(){
 
@@ -60,15 +82,52 @@ public class CameraDwi{
      */
 
     public void open(){
-        manager = (CameraManager)MainActivity.context.getSystemService(Context.CAMERA_SERVICE);
-        setDimensionsAndCameras();
-        try {
-            if(Permission.checkPermission(MainActivity.context, MainActivity.permissions)==false){
-                Permission.seekPermission((Activity) MainActivity.context, MainActivity.permissions, Permission.PERMISSION_ALL);
+        if(version==1){
+            if(oldCameraIdFlag!=-1){
+                //open old camera and set dimension
+                setDimensionsAndOldCamera(oldCameraIdFlag);
+            }else{
+                //todo. move this to constructor;
+                Camera.CameraInfo info = new Camera.CameraInfo();
+                int numOfCameras = Camera.getNumberOfCameras();
+                Log.d(TAG, "number of cameras for old API "+numOfCameras);
+                for(int i=0;i<numOfCameras;i++){
+                    Camera.getCameraInfo(i, info);
+                    if(info.facing== Camera.CameraInfo.CAMERA_FACING_BACK){
+                        oldRearId = i;
+                    }
+                    if(info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT){
+                        oldFrontId = i;
+                        oldCameraIdFlag = i;
+                        try{
+                            setDimensionsAndOldCamera(i);
+                        }catch(RuntimeException e){
+                            Log.d(TAG, "exception opening old camera", e);
+                        }
+                    }
+                }
             }
-            manager.openCamera(currentCamera, stateCallBack, mBackgroundHandler);
-        } catch (CameraAccessException e) {
-            Log.d(TAG, "get Camera Id access exception", e);
+            // for old camera you don't need call back to create preview. So
+            // I am doing that within open itself.
+            try {
+                oldCamera.setPreviewTexture(mSurfaceTexture);
+            } catch (IOException e) {
+                Log.d(TAG, "error setting preview texture in old camera ", e);
+            }
+            oldCamera.setDisplayOrientation(90);
+            oldCamera.startPreview();
+
+        }else if(version==2){
+            manager = (CameraManager)MainActivity.context.getSystemService(Context.CAMERA_SERVICE);
+            setDimensionsAndCameras();
+            try {
+                if(Permission.checkPermission(MainActivity.context, MainActivity.permissions)==false){
+                    Permission.seekPermission((Activity) MainActivity.context, MainActivity.permissions, Permission.PERMISSION_ALL);
+                }
+                manager.openCamera(currentCamera, stateCallBack, mBackgroundHandler);
+            } catch (CameraAccessException e) {
+                Log.d(TAG, "get Camera Id access exception", e);
+            }
         }
     }
 
@@ -183,7 +242,6 @@ public class CameraDwi{
 
     private void createCameraPreview(){
         try{
-
             //SurfaceTexture texture = MainActivity.textureView.getSurfaceTexture();
             SurfaceTexture texture = mSurfaceTexture;
             assert texture!=null;
@@ -228,16 +286,30 @@ public class CameraDwi{
     }
 
     public void swapCamera(){
-        cameraDevice.close();
-        cameraDevice = null;
-        if(currentCamera==FRONT_FACING){
-            currentCamera = REAR_FACING;
-        }else if(currentCamera==REAR_FACING){
-            currentCamera = FRONT_FACING;
-        }else{
-            return;
+        if(version==1){
+            oldCamera.stopPreview();
+            oldCamera.release();
+            //oldCamera = null;
+            if(oldCameraIdFlag==oldFrontId){
+                //FRONT
+                oldCameraIdFlag=oldRearId;
+            }else if(oldCameraIdFlag==oldRearId){
+                //REAR
+                oldCameraIdFlag=oldFrontId;
+            }
+            open();
+        }else if(version ==2){
+            cameraDevice.close();
+            cameraDevice = null;
+            if(currentCamera==FRONT_FACING){
+                currentCamera = REAR_FACING;
+            }else if(currentCamera==REAR_FACING){
+                currentCamera = FRONT_FACING;
+            }else{
+                return;
+            }
+            open();
         }
-        open();
     }
 
     public void setSurfaceTexture(SurfaceTexture st){
@@ -246,11 +318,23 @@ public class CameraDwi{
     }
 
     public Size getDimension(){
-        if(currentCamera == FRONT_FACING){
-            return imageDimensionFront;
-        }else{
-            return imageDimensionBack;
+        if(version==1){
+            if(oldCameraIdFlag==1){
+                //front
+                return oldCameraFrontSize;
+            }else if(oldCameraIdFlag==2){
+                //rear
+                return oldCameraRearSize;
+            }
+
+        }else if(version==2){
+            if(currentCamera == FRONT_FACING){
+                return imageDimensionFront;
+            }else{
+                return imageDimensionBack;
+            }
         }
+        return null;
     }
 
     /*
@@ -285,5 +369,17 @@ public class CameraDwi{
             Log.d(TAG, "camera access exception while trying to get Camera ID list", e);
         }
 
+    }
+
+    public void setDimensionsAndOldCamera(int id){
+        oldCamera = Camera.open(id);
+        Log.d(TAG, "camera opened id "+id);
+        Camera.Parameters parameters = oldCamera.getParameters();
+        Camera.Size size = parameters.getPreviewSize();
+        if(oldCameraIdFlag==1){
+            oldCameraFrontSize = new Size(size.width, size.height);
+        }else if(oldCameraIdFlag==0){
+            oldCameraRearSize = new Size(size.width, size.height);
+        }
     }
 }
