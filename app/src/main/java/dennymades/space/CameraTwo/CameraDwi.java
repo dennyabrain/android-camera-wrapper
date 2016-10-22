@@ -61,31 +61,8 @@ public class CameraDwi{
 
     public void open(){
         manager = (CameraManager)MainActivity.context.getSystemService(Context.CAMERA_SERVICE);
-
+        setDimensionsAndCameras();
         try {
-            String []cameraid = manager.getCameraIdList();
-            for(String cameraID : cameraid){
-                Log.d(TAG, "camera id - "+cameraID);
-                CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraID);
-                int facing = characteristics.get(characteristics.LENS_FACING);
-                if(facing==CameraCharacteristics.LENS_FACING_FRONT){
-                    FRONT_FACING = cameraID;
-
-                    imageDimensionFront = getOptimizedSize(characteristics);
-
-                }else if(facing==CameraCharacteristics.LENS_FACING_BACK){
-                    REAR_FACING = cameraID;
-
-                    imageDimensionBack = getOptimizedSize(characteristics);
-                }else{
-                    Log.d(TAG, "Neither Front or Rear camera found");
-                    return;
-                }
-            }
-            if(currentCamera==null){
-                currentCamera = REAR_FACING;
-            }
-
             if(Permission.checkPermission(MainActivity.context, MainActivity.permissions)==false){
                 Permission.seekPermission((Activity) MainActivity.context, MainActivity.permissions, Permission.PERMISSION_ALL);
             }
@@ -274,5 +251,39 @@ public class CameraDwi{
         }else{
             return imageDimensionBack;
         }
+    }
+
+    /*
+    * Set the camera types and their respective dimensions
+     */
+    public void setDimensionsAndCameras(){
+        String []cameraid = new String[0];
+        try {
+            cameraid = manager.getCameraIdList();
+            for(String cameraID : cameraid){
+                Log.d(TAG, "camera id - "+cameraID);
+                CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraID);
+                int facing = characteristics.get(characteristics.LENS_FACING);
+                if(facing==CameraCharacteristics.LENS_FACING_FRONT){
+                    FRONT_FACING = cameraID;
+
+                    imageDimensionFront = getOptimizedSize(characteristics);
+
+                }else if(facing==CameraCharacteristics.LENS_FACING_BACK){
+                    REAR_FACING = cameraID;
+
+                    imageDimensionBack = getOptimizedSize(characteristics);
+                }else{
+                    Log.d(TAG, "Neither Front or Rear camera found");
+                    return;
+                }
+            }
+            if(currentCamera==null){
+                currentCamera = REAR_FACING;
+            }
+        } catch (CameraAccessException e) {
+            Log.d(TAG, "camera access exception while trying to get Camera ID list", e);
+        }
+
     }
 }
