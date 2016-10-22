@@ -46,6 +46,8 @@ public class CameraDwi{
 
     private HandlerThread mBackgroundThread;
 
+    private SurfaceTexture mSurfaceTexture;
+
     public CameraDwi(){
 
     }
@@ -197,7 +199,9 @@ public class CameraDwi{
 
     private void createCameraPreview(){
         try{
-            SurfaceTexture texture = MainActivity.textureView.getSurfaceTexture();
+
+            //SurfaceTexture texture = MainActivity.textureView.getSurfaceTexture();
+            SurfaceTexture texture = mSurfaceTexture;
             assert texture!=null;
             if(currentCamera==FRONT_FACING){
                 texture.setDefaultBufferSize(imageDimensionFront.getWidth(), imageDimensionFront.getHeight());
@@ -250,5 +254,18 @@ public class CameraDwi{
             return;
         }
         open();
+    }
+
+    public void setSurfaceTexture(SurfaceTexture st){
+        Log.d(TAG, "surface texture set");
+        mSurfaceTexture = st;
+    }
+
+    public Size getDimension(){
+        if(currentCamera == FRONT_FACING){
+            return imageDimensionFront;
+        }else{
+            return imageDimensionBack;
+        }
     }
 }

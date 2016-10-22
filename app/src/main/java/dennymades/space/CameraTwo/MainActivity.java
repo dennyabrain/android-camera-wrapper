@@ -39,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
 
         camera = new CameraDwi();
 
-        textureView = (TextureView)findViewById(R.id.textureView);
-        textureListener = new TextureListener();
-        textureView.setSurfaceTextureListener(textureListener);
+        //textureView = (TextureView)findViewById(R.id.textureView);
+        //textureListener = new TextureListener();
+        //textureView.setSurfaceTextureListener(textureListener);
     }
 
     /**
@@ -87,11 +87,11 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         Log.e(TAG, "onResume");
         camera.startBackgroundThread();
-        if (textureView.isAvailable()) {
+        /*if (textureView.isAvailable()) {
             camera.open();
         } else {
             textureView.setSurfaceTextureListener(textureListener);
-        }
+        }*/
     }
     @Override
     protected void onPause() {
