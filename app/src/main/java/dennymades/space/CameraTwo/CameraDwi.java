@@ -82,7 +82,7 @@ public class CameraDwi{
             if(Permission.checkPermission(MainActivity.context, MainActivity.permissions)==false){
                 Permission.seekPermission((Activity) MainActivity.context, MainActivity.permissions, Permission.PERMISSION_ALL);
             }
-            manager.openCamera(currentCamera, stateCallBack, null);
+            manager.openCamera(currentCamera, stateCallBack, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.d(TAG, "get Camera Id access exception", e);
         }

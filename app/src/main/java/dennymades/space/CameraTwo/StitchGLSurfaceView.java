@@ -72,7 +72,7 @@ public class StitchGLSurfaceView extends GLSurfaceView implements GLSurfaceView.
         cameraPreviewRenderer.initRenderer(context, parent);
 
         //FOR NOW videoRenderer = new VideoRenderer(context);
-        mediaPlayer = new MediaPlayer();
+        //FOR NOW mediaPlayer = new MediaPlayer();
         //FOR NOW videoRenderer.setMediaPlayer(mediaPlayer);
 
         //test

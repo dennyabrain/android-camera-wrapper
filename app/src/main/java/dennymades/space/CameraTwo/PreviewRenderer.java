@@ -51,13 +51,12 @@ public class PreviewRenderer implements SurfaceTexture.OnFrameAvailableListener,
 
     private GLSurfaceView parentGLSurfaceView;
 
-    private CameraDwi camera;
-
     public PreviewRenderer(){
 
     }
 
     public void initRenderer(Context context, GLSurfaceView parent){
+        Log.d(TAG, "initializaing renderer ");
         mContext = context;
         parentGLSurfaceView = parent;
         final byte FULL_QUAD_COORDS[] = {-1, 1, -1, -1, 1, 1, 1, -1};
@@ -173,8 +172,8 @@ public class PreviewRenderer implements SurfaceTexture.OnFrameAvailableListener,
 
         //set camera para-----------------------------------
 
-        camera_width =camera.getDimension().getWidth();
-        camera_height =camera.getDimension().getHeight();
+        camera_width =MainActivity.camera.getDimension().getWidth();
+        camera_height =MainActivity.camera.getDimension().getHeight();
 
         //get the camera orientation and display dimension------------
         if(mContext.getResources().getConfiguration().orientation ==
@@ -215,7 +214,7 @@ public class PreviewRenderer implements SurfaceTexture.OnFrameAvailableListener,
      */
     @Override
     public void onDrawFrame(GL10 gl) {
-        Log.d("Denny", "cameraPreview draw frame");
+        //Log.d("Denny", "cameraPreview draw frame");
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         synchronized (this){
@@ -233,11 +232,11 @@ public class PreviewRenderer implements SurfaceTexture.OnFrameAvailableListener,
         mOffscreenShader.useProgram();
 
         int uTransformM = mOffscreenShader.getHandle("uTransformM");
-        int uOrientationM = mOffscreenShader.getHandle("uOrientationM");
+        // FOR NOW int uOrientationM = mOffscreenShader.getHandle("uOrientationM");
         int uRatioV = mOffscreenShader.getHandle("ratios");
 
         GLES20.glUniformMatrix4fv(uTransformM, 1, false, mTransformM, 0);
-        GLES20.glUniformMatrix4fv(uOrientationM, 1, false, mOrientationM, 0);
+        // FOR NOW  GLES20.glUniformMatrix4fv(uOrientationM, 1, false, mOrientationM, 0);
         GLES20.glUniform2fv(uRatioV, 1, mRatio, 0);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);

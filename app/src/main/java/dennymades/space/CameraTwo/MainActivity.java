@@ -21,8 +21,6 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.RECORD_AUDIO};
 
-    public static TextureView textureView;
-    public static TextureListener textureListener;
     public static CameraDwi camera;
     public static Context context;
 
@@ -38,10 +36,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         camera = new CameraDwi();
-
-        //textureView = (TextureView)findViewById(R.id.textureView);
-        //textureListener = new TextureListener();
-        //textureView.setSurfaceTextureListener(textureListener);
     }
 
     /**
@@ -63,13 +57,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        /*Log.d(TAG, "request code : " + String.valueOf(requestCode));
-        for(String permission : CameraTwo){
-            Log.d(TAG, "permission : "+permission);
-        }
-        for(int grantResult : grantResults){
-            Log.d(TAG, "permission : "+String.valueOf(grantResult));
-        }*/
+
         switch(requestCode){
             case Permission.PERMISSION_ALL:
                 if(grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
@@ -85,17 +73,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e(TAG, "onResume");
+        Log.d(TAG, "onResume");
         camera.startBackgroundThread();
-        /*if (textureView.isAvailable()) {
-            camera.open();
-        } else {
-            textureView.setSurfaceTextureListener(textureListener);
-        }*/
     }
     @Override
     protected void onPause() {
-        Log.e(TAG, "onPause");
+        Log.d(TAG, "onPause");
         //closeCamera();
         camera.stopBackgroundThread();
         super.onPause();
