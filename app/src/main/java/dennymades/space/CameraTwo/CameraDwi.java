@@ -50,6 +50,13 @@ public class CameraDwi{
 
     }
 
+    /*
+    * open fetches a list of all available cameras on the device and assigns
+    * front facing and back facing camera ids to FRONT_FACING and REAR_FACING respectively.
+    * it then checks if the necessary camera permissions exist and asks the CameraManager to
+    * open the current camera (it defaults to REAR_FACING)
+     */
+
     public void open(){
         manager = (CameraManager)MainActivity.context.getSystemService(Context.CAMERA_SERVICE);
 
