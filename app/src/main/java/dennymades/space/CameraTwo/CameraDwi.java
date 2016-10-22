@@ -15,6 +15,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -40,7 +41,7 @@ public class CameraDwi{
     private Size imageDimensionBack;
     private String currentCamera;
 
-    private int version = 1;
+    private int version = 0;
 
     private CaptureRequest.Builder captureRequestBuilder;
 
@@ -71,6 +72,14 @@ public class CameraDwi{
     private Size oldCameraRearSize;
 
     public CameraDwi(){
+        //detect API level and setup version of camera
+        int currentAPI = Build.VERSION.SDK_INT;
+        if(currentAPI>= Build.VERSION_CODES.LOLLIPOP){
+            version=2;
+        }else{
+            version=1;
+        }
+        Log.d(TAG, "version chosen : "+version);
 
     }
 
